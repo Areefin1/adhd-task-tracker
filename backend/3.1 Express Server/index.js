@@ -1,76 +1,99 @@
 import express from 'express';
+import pg from "pg";
+import 'dotenv/config';
 const app = express();
 
-let tasks = [
-  {
-    id: 1,
-    title: "Test task",
-    description: "Temporary backend task",
-    status: "Not Started"
-  }
-];
+const db = new pg.Client({
+    user: process.env.PGUSER,
+    host: process.env.PGHOST,
+    database: process.env.PGDATABASE,
+    password: process.env.PGPASSWORD,
+    port: process.env.PGPORT
+});
+
+await db.connect();
 
 app.use(express.json());
 
-app.get("/tasks", (req, res) => {
-    res.json(tasks);
-});
+app.get("/tasks", async (req, res) => {
+    try {
+        const result = await db.query("SELECT * FROM tasks");
+        res.status(200).json(result.rows);
 
-app.post("/tasks", (req, res) => {
-    console.log(req.body);
-
-    const newTask = {
-        id: crypto.randomUUID(),
-        title: req.body.title,
-        description: req.body.description,
-        status: req.body.status
-    };
-
-    tasks.push(newTask);
-
-    res.json({
-        message: "Task received",
-        task: req.body
-    });
-});
-
-app.patch("/tasks/:id", (req, res) => {
-    const id = req.params.id;
-
-    const task = tasks.find(task => task.id === id);
-
-    if(!task)
-    {
-        return res.status(404).json({
-            message: "Task not found"
+    } catch (err) {
+        console.error("Database error:", err);
+        res.status(500).json({
+            message: "Failed to retrieve tasks"
         });
     }
-
-    task.status = req.body.status;
-    res.json({
-        message: "Task updated",
-        task: task
-    });
 });
 
-app.delete("/tasks/:id", (req, res) => {
-    const id = req.params.id;
-
-    const task = tasks.find(task => task.id === id);
-
-    if(!task)
-    {
-        return res.status(404).json({
-            message: "Task not found"
+app.post("/tasks", async (req, res) => {
+    try {
+        const result = await db.query("INSERT INTO tasks (title, description) VALUES ($1, $2) RETURNING *", [req.body.title, req.body.description])
+        res.status(201).json({
+            message: "Task received",
+            task: result.rows[0]
+    });
+    } catch (err) {
+        console.error("Database error:", err);
+        res.status(500).json({
+            message: "Failed to add task"
         });
     }
+});
 
-    tasks = tasks.filter(task => task.id !== id);
+app.patch("/tasks/:id", async (req, res) => {
+        try {
+            const result = await db.query("UPDATE tasks SET status = $1 WHERE id = $2 RETURNING *", [req.body.status, req.params.id]);
 
-    res.json({
-        message: "Task deleted",
-        task: task
-    });
+            if(result.rowCount === 1)
+            {
+                res.status(200).json({
+                    message: "Task updated",
+                    task: result.rows[0]
+                });
+            }
+            else if(result.rowCount === 0)
+            {
+                res.status(404).json({
+                    message: "Task not found"
+                });
+            }
+        } catch (err) {
+            console.error("Database error:", err);
+            res.status(500).json({
+                message: "Failed to update task"
+            });
+        }
+});
+
+app.delete("/tasks/:id", async (req, res) => {
+
+    try {
+        const result = await db.query("DELETE FROM tasks WHERE id = $1 RETURNING *", [req.params.id]);
+
+        if(result.rowCount === 1)
+        {
+            res.status(200).json({
+                message: "Task deleted",
+                task: result.rows[0]
+            });
+        }
+        else if(result.rowCount === 0)
+        {
+            res.status(404).json({
+                message: "Task not found"
+            });
+        }
+    }
+    catch(err) 
+    {
+        console.error("Database error:", err);
+        res.status(500).json({
+            message: "Failed to delete task"
+        });
+    }
 });
 
 app.listen(3001, () => {
