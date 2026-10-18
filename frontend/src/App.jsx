@@ -1,6 +1,7 @@
 import './App.css'
 import Task from './Task.jsx';
 import React, { useState, useEffect } from 'react';
+import TaskForm from './TaskForm.jsx';
 
 
 
@@ -171,21 +172,13 @@ async function handleEdit(id, taskStatus)
     <>
           <h1>Task Tracker</h1>
           {tasks.map(createTask)}
-          <form>
-              <label> Title: </label>
-              <input type='text' placeholder='Add task title...' name='title' value={task.title} onChange={handleOnChange}/>
-              <label> Description </label>
-              <input type='text' placeholder='Add task description...' name='description' value={task.description} onChange={handleOnChange}/>
-
-              <label> Status: </label>
-              <select name='status' value={task.status} onChange={handleOnChange}>
-                <option value="">--Please choose an option--</option>
-                <option value="Not Started">Not Started</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
-              </select>
-              <button onClick={AddTask}>Add Task</button>
-          </form>
+          <TaskForm 
+          addTask={AddTask} 
+          onChange={handleOnChange} 
+          title={task.title} 
+          description={task.description}
+          status={task.status}
+          />
     </>
   )
 }
