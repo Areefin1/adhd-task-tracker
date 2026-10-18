@@ -1,13 +1,12 @@
 import './App.css'
 import Task from './Task.jsx';
-import taskData from './tasks.js';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 
 
 function App() {
 
-  const [tasks, setTasks] = useState(taskData);
+  const [tasks, setTasks] = useState([]);
 
   const [task, setTask] = useState({
       title: '', 
@@ -15,21 +14,58 @@ function App() {
       status: ''
     });
 
-function handleEdit(id, taskStatus)
-{
-  setTasks(currTasks => {
-    return currTasks.map(currTask => {
-      if (currTask.id === id)
+    useEffect(() => {
+      fetchTasks();
+  }, []);
+
+  async function fetchTasks()
+  {
+    try {
+      const response = await fetch('http://localhost:3001/tasks');
+      const data = await response.json();
+      console.log(data);
+
+      if(response.ok)
       {
-        return {
-          ...currTask,
-          status: taskStatus
+        setTasks(data);
+      }
+    } catch (error) {
+        console.error("Failed to fetch GET:", error);
+    }
+  }
+
+async function handleEdit(id, taskStatus)
+{
+  try {
+    const response = await fetch(`http://127.0.0.1:3001/tasks/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({status: taskStatus})
+    });
+    
+    const data = await response.json();
+
+    if(response.ok)
+    {
+      console.log(data.task);
+      setTasks(currTasks => {
+        return currTasks.map(currTask => {
+          if (currTask.id === id)
+          {
+            return {
+              ...currTask,
+              status: taskStatus
         };
       }
-
-      return currTask;
-    });
-  });
+        return currTask;
+        });
+      });
+    }
+  } catch (error) {
+      console.error("Failed to update task:", error);
+  }
 }
 
   function createTask(task)
@@ -47,26 +83,53 @@ function handleEdit(id, taskStatus)
     ) 
   }
 
-  function handleDelete(id)
+  async function handleDelete(id)
   {
-    setTasks(currTasks => {
-      return currTasks.filter(task => task.id !== id);
-    });
+    try {
+        const response = await fetch(`http://127.0.0.1:3001/tasks/${id}`, {
+          method: "DELETE"
+        });
+
+        const data = await response.json();
+
+        if(response.ok)
+        {
+          console.log(data);
+          setTasks(currTasks => {
+            return currTasks.filter(task => task.id !== id);
+          });
+        }
+    } catch (error) {
+      console.error("Failed to delete task", error);
+    }
   }
 
-  function AddTask(e)
+  async function AddTask(e)
   {
-    setTasks(currTasks => {
-      const newTask = {
-        id: crypto.randomUUID(),
-        title: task.title,
-        description: task.description,
-        status: task.status
-      };
-        return [...currTasks, newTask];
-    });
-
     e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:3001/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(task)
+      });
+
+      const data = await response.json();
+
+      if(response.ok)
+      {
+        console.log(data.task);
+        setTasks(currTasks => {
+          return [...currTasks, data.task]
+        });
+
+        setTask({title: '', description: '', status: ''});
+      }
+    } catch (error) {
+      console.error("Failed to add task:", error)
+    }
   }
 
   function handleOnChange(e)
