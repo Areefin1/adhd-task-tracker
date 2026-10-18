@@ -34,7 +34,7 @@ app.get("/tasks", async (req, res) => {
 
 app.post("/tasks", async (req, res) => {
     try {
-        const result = await db.query("INSERT INTO tasks (title, description) VALUES ($1, $2) RETURNING *", [req.body.title, req.body.description])
+        const result = await db.query("INSERT INTO tasks (title, description, status) VALUES ($1, $2, $3) RETURNING *", [req.body.title, req.body.description, req.body.status || 'Not Started'])
         res.status(201).json({
             message: "Task received",
             task: result.rows[0]
