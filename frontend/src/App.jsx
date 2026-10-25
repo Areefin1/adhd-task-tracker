@@ -92,7 +92,21 @@ function App() {
 
   return (
     <>
-      <h1>Task Tracker</h1>
+      <h1>ADHD Task Tracker</h1>
+      <h2>Create a New Task</h2>
+        <TaskForm
+        addTask={handleAddTask}
+        onChange={handleOnChange}
+        title={task.title}
+        description={task.description}
+        status={task.status}
+      />
+      <div className="heading">
+          <h2>Title</h2>
+          <h2>Description</h2>
+          <h2>Status</h2>
+          <h2>Actions</h2>
+      </div>
       {tasks.map((task) => (
         <Task
           key={task.id}
@@ -104,13 +118,6 @@ function App() {
           onEdit={handleEdit}
         />
       ))}
-      <TaskForm
-        addTask={handleAddTask}
-        onChange={handleOnChange}
-        title={task.title}
-        description={task.description}
-        status={task.status}
-      />
     </>
   );
 }
