@@ -1,0 +1,51 @@
+.itim-regular {
+    font-family: "Itim", cursive;
+    font-weight: 400;
+    font-style: normal;
+}
+
+h1 {
+    font-family: "Itim", cursive;
+    font-weight: 400;
+    font-style: normal;
+    text-align: center;
+}
+
+
+.task-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 220px 80px;
+    gap: 10px;
+    border: 2px solid black;
+    border-radius: 24px;
+    padding: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 220px 80px;
+    gap: 10px;
+    padding: 10px;
+}
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    width: 350px;
+}
+
+.form-container > label {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.form-container > label > span {
+    width: 100px;
+}
+
+.item {
+    align-self: flex-start;
+}
+
