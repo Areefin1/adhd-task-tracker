@@ -4,7 +4,6 @@ function Task(props)
 {
     return (
         <>
-        <div className='task-row'>
             <h4>{props.title}</h4>
             <p>{props.description}</p>
             <label>Status:
@@ -15,8 +14,6 @@ function Task(props)
                 <option value="Completed">Completed</option>
             </select>
             </label>
-            <input type='button' value={"Delete"} onClick={() => props.onDelete(props.id)}/>
-        </div>
         </>
     )
 }

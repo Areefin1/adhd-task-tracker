@@ -14,7 +14,7 @@ h1 {
 
 .task-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 220px 80px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 220px 160px;
     gap: 10px;
     border: 2px solid black;
     border-radius: 24px;
@@ -25,7 +25,7 @@ h1 {
 
 .heading {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 220px 80px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 220px 160px;
     gap: 10px;
     padding: 10px;
 }
@@ -47,5 +47,11 @@ h1 {
 
 .item {
     align-self: flex-start;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 

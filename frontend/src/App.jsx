@@ -2,6 +2,7 @@ import "./App.css";
 import Task from "./Task.jsx";
 import React, { useState, useEffect } from "react";
 import TaskForm from "./TaskForm.jsx";
+import TaskControl from "./TaskControl.jsx"
 import {
   getTasks,
   addNewTask,
@@ -10,6 +11,14 @@ import {
 } from "./services/taskAPI.js";
 
 function App() {
+
+  const nextTimerState = {
+    "Not Active": ["Running"],
+    "Running": ["Paused", "Completed"],
+    "Paused": ["Running", "Completed"],
+    "Completed": []
+  }
+
   const [tasks, setTasks] = useState([]);
 
   const [task, setTask] = useState({
@@ -17,6 +26,8 @@ function App() {
     description: "",
     status: "",
   });
+
+  const [timerStates, setTimerStates] = useState({});
 
   useEffect(() => {
     fetchTasks();
@@ -90,6 +101,19 @@ function App() {
     });
   }
 
+  function handleTransition(id, requestedState)
+  {
+    if(nextTimerState[timerStates[id] ?? "Not Active"].includes(requestedState))
+    {
+      setTimerStates((prevTimerStates) => {
+        return {
+          ...prevTimerStates,
+          [id]: requestedState
+        }
+      });
+    }
+  }
+
   return (
     <>
       <h1>ADHD Task Tracker</h1>
@@ -108,15 +132,27 @@ function App() {
           <h2>Actions</h2>
       </div>
       {tasks.map((task) => (
-        <Task
-          key={task.id}
-          id={task.id}
-          title={task.title}
-          description={task.description}
-          status={task.status}
-          onDelete={handleDelete}
-          onEdit={handleEdit}
-        />
+        <div key={task.id} className="task-row">
+            <Task
+            id={task.id}
+            title={task.title}
+            description={task.description}
+            status={task.status}
+            onEdit={handleEdit}
+            />
+            <div className="actions">            
+              <TaskControl
+              id={task.id} 
+              current_state={timerStates[task.id] ?? "Not Active"}
+              onTransition={handleTransition}
+              />
+              <input 
+              type="button"
+              value={"Delete"}
+              onClick={() => handleDelete(task.id)}
+              />
+            </div>
+        </div>
       ))}
     </>
   );
