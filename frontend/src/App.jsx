@@ -3,6 +3,9 @@ import Task from "./Task.jsx";
 import React, { useState, useEffect } from "react";
 import TaskForm from "./TaskForm.jsx";
 import TaskControl from "./TaskControl.jsx"
+import TimeWorked from "./TimeWorked.jsx";
+
+
 import {
   getTasks,
   addNewTask,
@@ -30,8 +33,7 @@ function App() {
 
   const [task, setTask] = useState({
     title: "",
-    description: "",
-    status: "Not Started",
+    description: ""
   });
 
   useEffect(() => {
@@ -69,7 +71,7 @@ function App() {
         return [...currTasks, data];
       });
 
-      setTask({ title: "", description: "", status: "Not Started" });
+      setTask({ title: "", description: ""});
     } catch (error) {
       console.error("Failed to add task:", error);
     }
@@ -90,7 +92,9 @@ function App() {
   {
     try {
           const currentTask = tasks.find(task => task.id === id);
-          if(currentTask && nextTimerState[currentTask.timer_state ?? "Not Active"].includes(requestedState))
+          const prev_timer_state = currentTask?.timer_state ?? "Not Active";
+
+          if(currentTask && nextTimerState[prev_timer_state].includes(requestedState))
           {
               const data = await updateTask(id, requestedState);
 
@@ -100,7 +104,9 @@ function App() {
                   {
                     return {
                       ...currTask,
-                      timer_state: data.timer_state
+                      timer_state: data.timer_state,
+                      started_at: data.started_at,
+                      accumulated_time: data.accumulated_time
                     }
                   }
                   return currTask;
@@ -135,6 +141,11 @@ function App() {
             title={task.title}
             description={task.description}
             status={timer_status[task.timer_state ?? "Not Active"]}
+            />
+            <TimeWorked 
+            current_timer_state={task.timer_state ?? "Not Active"}
+            started_at={task.started_at}
+            accumulated_time={task.accumulated_time ?? 0}
             />
             <div className="actions">            
               <TaskControl
