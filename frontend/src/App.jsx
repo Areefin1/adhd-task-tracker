@@ -19,15 +19,20 @@ function App() {
     "Completed": []
   }
 
+  const timer_status = {
+    "Not Active": "Not Started",
+    "Running": "In Progress",
+    "Paused": "In Progress",
+    "Completed": "Completed"
+  };
+
   const [tasks, setTasks] = useState([]);
 
   const [task, setTask] = useState({
     title: "",
     description: "",
-    status: "",
+    status: "Not Started",
   });
-
-  const [timerStates, setTimerStates] = useState({});
 
   useEffect(() => {
     fetchTasks();
@@ -40,26 +45,6 @@ function App() {
       setTasks(data);
     } catch (error) {
       console.error("Failed to fetch GET:", error);
-    }
-  }
-
-  async function handleEdit(id, taskStatus) {
-    try {
-      const data = await updateTask(id, taskStatus);
-
-      setTasks((currTasks) => {
-        return currTasks.map((currTask) => {
-          if (currTask.id === id) {
-            return {
-              ...currTask,
-              status: data.status,
-            };
-          }
-          return currTask;
-        });
-      });
-    } catch (error) {
-      console.error("Failed to update task:", error);
     }
   }
 
@@ -84,7 +69,7 @@ function App() {
         return [...currTasks, data];
       });
 
-      setTask({ title: "", description: "", status: "" });
+      setTask({ title: "", description: "", status: "Not Started" });
     } catch (error) {
       console.error("Failed to add task:", error);
     }
@@ -101,16 +86,29 @@ function App() {
     });
   }
 
-  function handleTransition(id, requestedState)
+  async function handleTransition(id, requestedState)
   {
-    if(nextTimerState[timerStates[id] ?? "Not Active"].includes(requestedState))
-    {
-      setTimerStates((prevTimerStates) => {
-        return {
-          ...prevTimerStates,
-          [id]: requestedState
-        }
-      });
+    try {
+          const currentTask = tasks.find(task => task.id === id);
+          if(currentTask && nextTimerState[currentTask.timer_state ?? "Not Active"].includes(requestedState))
+          {
+              const data = await updateTask(id, requestedState);
+
+              setTasks((currTasks) => {
+                return currTasks.map((currTask) => {
+                  if(currTask.id === id)
+                  {
+                    return {
+                      ...currTask,
+                      timer_state: data.timer_state
+                    }
+                  }
+                  return currTask;
+                });
+              });
+          }
+    } catch (error) {
+        console.error("Failed to update task:", error)
     }
   }
 
@@ -123,7 +121,6 @@ function App() {
         onChange={handleOnChange}
         title={task.title}
         description={task.description}
-        status={task.status}
       />
       <div className="heading">
           <h2>Title</h2>
@@ -137,13 +134,12 @@ function App() {
             id={task.id}
             title={task.title}
             description={task.description}
-            status={task.status}
-            onEdit={handleEdit}
+            status={timer_status[task.timer_state ?? "Not Active"]}
             />
             <div className="actions">            
               <TaskControl
               id={task.id} 
-              current_state={timerStates[task.id] ?? "Not Active"}
+              current_state={task.timer_state ?? "Not Active"}
               onTransition={handleTransition}
               />
               <input 
