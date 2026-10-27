@@ -35,14 +35,14 @@ async function addNewTask(task)
     }
 }
 
-async function updateTask(id, taskStatus)
+async function updateTask(id, taskTimerState)
 {
     const res = await fetch(`http://127.0.0.1:3001/tasks/${id}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({status: taskStatus})
+        body: JSON.stringify({timer_state: taskTimerState})
     });
 
     const data = await res.json();
