@@ -22,12 +22,23 @@ const db = new pg.Pool({
     port: process.env.PGPORT
 });
 
+function normalizeTask(task)
+{
+    return {
+        ...task,
+        accumulated_time: Number(task.accumulated_time),
+        started_at: task.started_at
+            ? new Date(task.started_at).getTime()
+            : null
+    };
+}
+
 app.use(express.json());
 
 app.get("/tasks", async (req, res) => {
     try {
         const result = await db.query("SELECT * FROM tasks");
-        res.status(200).json(result.rows);
+        res.status(200).json(result.rows.map(normalizeTask));
 
     } catch (err) {
         console.error("Database error:", err);
@@ -39,11 +50,11 @@ app.get("/tasks", async (req, res) => {
 
 app.post("/tasks", async (req, res) => {
     try {
-        const result = await db.query("INSERT INTO tasks (title, description, status) VALUES ($1, $2, $3) RETURNING *", [req.body.title, req.body.description, req.body.status || 'Not Started'])
+        const result = await db.query("INSERT INTO tasks (title, description) VALUES ($1, $2) RETURNING *", [req.body.title, req.body.description]);
         res.status(201).json({
             message: "Task received",
-            task: result.rows[0]
-    });
+            task: normalizeTask(result.rows[0])
+        });
     } catch (err) {
         console.error("Database error:", err);
         res.status(500).json({
@@ -59,7 +70,7 @@ app.patch("/tasks/:id", async (req, res) => {
         await client.query("BEGIN");
 
         const result = await client.query(
-            "SELECT timer_state FROM tasks WHERE id = $1 FOR UPDATE",
+            "SELECT timer_state, started_at, accumulated_time FROM tasks WHERE id = $1 FOR UPDATE",
             [req.params.id]
         );
 
@@ -73,25 +84,45 @@ app.patch("/tasks/:id", async (req, res) => {
 
         const currentState = result.rows[0].timer_state;
         const requestedState = req.body.timer_state;
-
+        
         if (!nextTimerState[currentState]?.includes(requestedState)) {
             await client.query("ROLLBACK");
 
             return res.status(400).json({
                 message: "Invalid timer state transition"
             });
+        }      
+        
+        const previousStartedAt = result.rows[0].started_at;
+        let accumulated_time = Number(result.rows[0].accumulated_time);
+
+        if (currentState === "Running" && previousStartedAt == null) {
+            await client.query("ROLLBACK");
+
+            return res.status(409).json({
+                message: "Running task has no starting timestamp"
+            });
         }
 
+        const transitionTime = Date.now();
+
+        if(currentState === "Running" && previousStartedAt != null)
+        {
+            accumulated_time += Math.max(0, transitionTime - previousStartedAt.getTime());
+        }
+
+        const newStartedAt = requestedState === "Running" ? new Date(transitionTime) : null;
+
         const updatedTask = await client.query(
-            "UPDATE tasks SET timer_state = $1 WHERE id = $2 RETURNING *",
-            [requestedState, req.params.id]
+            "UPDATE tasks SET timer_state = $1, accumulated_time = $2, started_at = $3 WHERE id = $4 RETURNING *",
+            [requestedState, accumulated_time, newStartedAt, req.params.id]
         );
 
         await client.query("COMMIT");
 
         return res.status(200).json({
             message: "Task updated",
-            task: updatedTask.rows[0]
+            task: normalizeTask(updatedTask.rows[0])
         });
 
     } catch (err) {
