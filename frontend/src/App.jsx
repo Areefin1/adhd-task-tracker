@@ -122,9 +122,9 @@ async function handleTransition(id, requestedState) {
 
   return (
     <>
-      <h1>ADHD Task Tracker</h1>
+      <h1 className="text-4xl text-purple-400">ADHD Task Tracker</h1>
       <h2>Create a New Task</h2>
-        <TaskForm
+      <TaskForm
         addTask={handleAddTask}
         onChange={handleOnChange}
         title={task.title}
@@ -134,6 +134,8 @@ async function handleTransition(id, requestedState) {
           <h2>Title</h2>
           <h2>Description</h2>
           <h2>Status</h2>
+          <h2>Time Worked</h2>
+          <h2>Current Session</h2>
           <h2>Actions</h2>
       </div>
       {tasks.map((task) => (
@@ -167,6 +169,7 @@ async function handleTransition(id, requestedState) {
               type="button"
               value={"Delete"}
               onClick={() => handleDelete(task.id)}
+              className="bg-red-600 hover:bg-red-500 text-white font-semibold px-2 py-1 rounded-lg cursor-pointer transition-colors"
               />
             </div>
         </div>

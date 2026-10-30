@@ -1,33 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Dekko&display=swap');
+:root {
+    --bg-primary: #092635;
+    --bg-card: #1B4242;
+    --bg-elevated: #29483E;
+
+    --accent: #5EEAD4;
+
+    --text-primary: #ECFDF5;
+    --text-secondary: #A7C7BD;
+}
+
+html {
+    background-color: var(--bg-primary);
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+
+    font-family: "Dekko", cursive;
+    font-size: 20px;
+    font-weight: 400;
+
+    padding: 20px;
+}
+
 .itim-regular {
-    font-family: "Itim", cursive;
+    font-family: "Dekko", cursive;
     font-weight: 400;
     font-style: normal;
 }
 
 h1 {
-    font-family: "Itim", cursive;
-    font-weight: 400;
-    font-style: normal;
+    color: var(--text-primary);
     text-align: center;
+    font-size: 36px;
+    font-weight: 700;
 }
 
+h2 {
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.heading h2 {
+    color: var(--text-secondary);
+    font-size: 22px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
 
 .task-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 220px 160px;
+
+    grid-template-columns:
+        minmax(0, 1.5fr)
+        minmax(0, 2.5fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+
     gap: 10px;
-    border: 2px solid black;
-    border-radius: 24px;
-    padding: 10px;
+
+    background-color: var(--bg-card);
+
+    border: 1px solid var(--bg-elevated);
+    border-radius: 16px;
+
+    padding: 16px;
+
     align-items: center;
     margin-bottom: 10px;
+    font-size: 20px;
 }
 
 .heading {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 220px 160px;
+    grid-template-columns:
+        minmax(0, 1.5fr)
+        minmax(0, 2.5fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+
     gap: 10px;
     padding: 10px;
+}
+
+.heading > h2:nth-child(4),
+.heading > h2:nth-child(5) {
+    text-align: center;
+}
+
+.task-row > :nth-child(4),
+.task-row > :nth-child(5) {
+    text-align: center;
 }
 
 .form-container {
@@ -39,6 +118,7 @@ h1 {
 .form-container > label {
     display: flex;
     margin-bottom: 10px;
+    font-size: 20px;
 }
 
 .form-container > label > span {
