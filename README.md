@@ -5,7 +5,6 @@
 **Status: In Progress**
 
 ## Overview
-## Overview
 
 ADHD Task Tracker is a full-stack productivity application designed to help people with ADHD manage their tasks, track their time, and better understand their working habits.
 
@@ -30,6 +29,8 @@ Tracks the total amount of time actively spent working on a task, even across mu
 Tracks the duration of an individual working session. Short breaks preserve the current session, while extended breaks automatically reset it, allowing users to distinguish between their total working time and their current session.
 
 Both timers use timestamps and persistent database storage, ensuring that working time is accurately calculated without relying solely on the browser remaining open.
+
+*Development Note: The break threshold is temporarily set to 20 seconds to make testing easier. The intended default is 20 minutes, with customizable thresholds planned for a future update.*
 
 ### Long-Term Vision
 
@@ -96,38 +97,6 @@ As development continues, I hope to make the application publicly available, gat
 - Custom fonts and colors.
 - Task controls that change depending on task status.
 - Styled forms and task cards using CSS and Tailwind CSS.
-
-## How the Timers Work
-
-**Time Worked**
-
-Records the total time spent actively working on a task.
-
-For example:
-
-- Work for 30 minutes.
-- Pause the task.
-- Resume and work for another 20 minutes.
-- Total Time Worked: **50 minutes**.
-
-**Current Session**
-
-Tracks the time spent in the current working session.
-
-Short breaks preserve the current session, while longer breaks reset it.
-
-For example:
-
-- Work for 30 minutes.
-- Take a 5-minute break.
-- Resume working for another 20 minutes.
-- Current Session: **50 minutes**.
-
-If the break exceeds the configured threshold, the next working session starts from zero.
-
-The total Time Worked remains unchanged.
-
-*Note: The current break threshold is set to 20 seconds for development and testing.*
 
 ## Running Locally
 
