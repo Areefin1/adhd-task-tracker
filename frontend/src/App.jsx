@@ -1,130 +1,181 @@
-import './App.css'
-import Task from './Task.jsx';
-import taskData from './tasks.js';
-import React, { useState } from 'react';
+import "./App.css";
+import Task from "./components/Task.jsx";
+import React, { useState, useEffect } from "react";
+import TaskForm from "./components/TaskForm.jsx";
+import TaskControl from "./components/TaskControl.jsx"
+import TimeWorked from "./components/TimeWorked.jsx";
+import CurrentSession from "./components/CurrentSession.jsx";
 
 
+import {
+  getTasks,
+  addNewTask,
+  updateTask,
+  deleteTask,
+} from "./services/taskAPI.js";
 
 function App() {
 
-  const [tasks, setTasks] = useState(taskData);
+  const nextTimerState = {
+    "Not Active": ["Running"],
+    "Running": ["Paused", "Completed"],
+    "Paused": ["Running", "Completed"],
+    "Completed": []
+  }
+
+  const timer_status = {
+    "Not Active": "Not Started",
+    "Running": "In Progress",
+    "Paused": "In Progress",
+    "Completed": "Completed"
+  };
+
+  const [tasks, setTasks] = useState([]);
 
   const [task, setTask] = useState({
-      title: '', 
-      description: '', 
-      status: ''
-    });
-
-function handleEdit(id, taskStatus)
-{
-  setTasks(currTasks => {
-    return currTasks.map(currTask => {
-      if (currTask.id === id)
-      {
-        return {
-          ...currTask,
-          status: taskStatus
-        };
-      }
-
-      return currTask;
-    });
+    title: "",
+    description: ""
   });
-}
 
-  function createTask(task)
-  {
-    return (
-      <Task
-        key={task.id}
-        id={task.id}
-        title={task.title}
-        description={task.description}
-        status={task.status}
-        onDelete={handleDelete}
-        onEdit={handleEdit}
-      />
-    ) 
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  async function fetchTasks() {
+    try {
+        const data = await getTasks();
+
+        setTasks(data);
+    } catch (error) {
+        console.error("Failed to fetch GET:", error);
+    }
   }
 
-  function handleDelete(id)
-  {
-    setTasks(currTasks => {
-      return currTasks.filter(task => task.id !== id);
-    });
+  async function handleDelete(id) {
+    try {
+      const data = await deleteTask(id);
+
+      setTasks((currTasks) => {
+        return currTasks.filter((task) => task.id !== data.id);
+      });
+    } catch (error) {
+      console.error("Failed to delete task", error);
+    }
   }
 
-  function AddTask(e)
-  {
-    setTasks(currTasks => {
-      const newTask = {
-        id: crypto.randomUUID(),
-        title: task.title,
-        description: task.description,
-        status: task.status
-      };
-        return [...currTasks, newTask];
-    });
-
+  async function handleAddTask(e) {
     e.preventDefault();
+    try {
+      const data = await addNewTask(task);
+
+      setTasks((currTasks) => {
+          return [...currTasks, data];
+      });
+
+      setTask({ title: "", description: ""});
+    } catch (error) {
+      console.error("Failed to add task:", error);
+    }
   }
 
-  function handleOnChange(e)
-  {
-     const { value, name } = e.target;
+  function handleOnChange(e) {
+    const { value, name } = e.target;
 
-     console.log(value);
-     console.log(name);
-
-     setTask(prevValue => {
-      if(name === 'title')
-      {
+    setTask((prevValue) => {
         return {
-          title: value,
-          description: prevValue.description,
-          status: prevValue.status
+            ...prevValue,
+            [name]: value
         }
-      }
-      else if(name === 'description')
-      {
-        return {
-          title: prevValue.title,
-          description: value,
-          status: prevValue.status
-        }
-      }
-      else if(name === 'status')
-      {
-        return {
-          title: prevValue.title,
-          description: prevValue.description,
-          status: value,
-        }
-      }
-     });
+    });
   }
+  const minimum_break_threshold = 20 * 1000;
+async function handleTransition(id, requestedState) {
+    try {
+        const currentTask = tasks.find(task => task.id === id);
+        const prev_timer_state = currentTask?.timer_state ?? "Not Active";
+
+        if (currentTask && nextTimerState[prev_timer_state].includes(requestedState)) {
+
+            const data = await updateTask(id, requestedState);
+
+            setTasks((currTasks) => {
+                return currTasks.map((currTask) => {
+                    if (currTask.id === id) {
+                        return {
+                            ...currTask,
+                            timer_state: data.timer_state,
+                            started_at: data.started_at,
+                            accumulated_time: data.accumulated_time,
+                            session_baseline: data.session_baseline,
+                            paused_at: data.paused_at
+                        };
+                    }
+
+                    return currTask;
+                });
+            });
+        }
+    } catch (error) {
+        console.error("Failed to update task:", error);
+    }
+}
 
   return (
     <>
-          <h1>Task Tracker</h1>
-          {tasks.map(createTask)}
-          <form>
-              <label> Title: </label>
-              <input type='text' placeholder='Add task title...' name='title' value={task.title} onChange={handleOnChange}/>
-              <label> Description </label>
-              <input type='text' placeholder='Add task description...' name='description' value={task.description} onChange={handleOnChange}/>
-
-              <label> Status: </label>
-              <select name='status' value={task.status} onChange={handleOnChange}>
-                <option value="">--Please choose an option--</option>
-                <option value="Not Started">Not Started</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
-              </select>
-              <button onClick={AddTask}>Add Task</button>
-          </form>
+      <h1 className="text-4xl text-purple-400">ADHD Task Tracker</h1>
+      <h2>Create a New Task</h2>
+      <TaskForm
+        addTask={handleAddTask}
+        onChange={handleOnChange}
+        title={task.title}
+        description={task.description}
+      />
+      <div className="heading">
+          <h2>Title</h2>
+          <h2>Description</h2>
+          <h2>Status</h2>
+          <h2>Time Worked</h2>
+          <h2>Current Session</h2>
+          <h2>Actions</h2>
+      </div>
+      {tasks.map((task) => (
+        <div key={task.id} className="task-row">
+            <Task
+            id={task.id}
+            title={task.title}
+            description={task.description}
+            status={timer_status[task.timer_state ?? "Not Active"]}
+            />
+            <TimeWorked 
+            current_timer_state={task.timer_state ?? "Not Active"}
+            started_at={task.started_at}
+            accumulated_time={task.accumulated_time ?? 0}
+            />
+            <CurrentSession 
+            current_timer_state={task.timer_state ?? "Not Active"}
+            started_at={task.started_at}
+            accumulated_time={task.accumulated_time ?? 0}
+            paused_at={task.paused_at}
+            sessionBaseline={task.session_baseline}
+            minimum_break_threshold={minimum_break_threshold}
+            />
+            <div className="actions">            
+              <TaskControl
+              id={task.id} 
+              current_state={task.timer_state ?? "Not Active"}
+              onTransition={handleTransition}
+              />
+              <input 
+              type="button"
+              value={"Delete"}
+              onClick={() => handleDelete(task.id)}
+              className="bg-red-600 hover:bg-red-500 text-white font-semibold px-2 py-1 rounded-lg cursor-pointer transition-colors"
+              />
+            </div>
+        </div>
+      ))}
     </>
-  )
+  );
 }
 
-export default App
+export default App;

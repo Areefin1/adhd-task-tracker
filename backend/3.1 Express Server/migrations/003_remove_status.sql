@@ -1,0 +1,6 @@
+BEGIN;
+
+ALTER TABLE tasks
+DROP COLUMN status;
+
+COMMIT;
