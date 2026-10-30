@@ -14,6 +14,8 @@ const nextTimerState = {
     "Completed": []
   }
 
+const minimum_break_threshold = 20 * 1000;
+
 const db = new pg.Pool({
     user: process.env.PGUSER,
     host: process.env.PGHOST,
@@ -27,9 +29,9 @@ function normalizeTask(task)
     return {
         ...task,
         accumulated_time: Number(task.accumulated_time),
-        started_at: task.started_at
-            ? new Date(task.started_at).getTime()
-            : null
+        started_at: task.started_at ? new Date(task.started_at).getTime() : null,
+        paused_at: task.paused_at ? new Date(task.paused_at).getTime() : null,
+        session_baseline: Number(task.session_baseline)
     };
 }
 
@@ -70,7 +72,7 @@ app.patch("/tasks/:id", async (req, res) => {
         await client.query("BEGIN");
 
         const result = await client.query(
-            "SELECT timer_state, started_at, accumulated_time FROM tasks WHERE id = $1 FOR UPDATE",
+            "SELECT timer_state, started_at, accumulated_time, paused_at, session_baseline FROM tasks WHERE id = $1 FOR UPDATE",
             [req.params.id]
         );
 
@@ -112,10 +114,36 @@ app.patch("/tasks/:id", async (req, res) => {
         }
 
         const newStartedAt = requestedState === "Running" ? new Date(transitionTime) : null;
+        const newPausedAt = requestedState === "Paused" ? new Date(transitionTime) : null;
+
+        const previousPausedAt = result.rows[0].paused_at;
+        let session_baseline = Number(result.rows[0].session_baseline);
+
+        if(currentState === "Not Active" && requestedState === "Running")
+        {
+            session_baseline = accumulated_time;
+        }
+
+        if(currentState === "Paused" && (requestedState === "Running" || requestedState === "Completed"))
+        {
+            if(previousPausedAt == null)
+            {
+                session_baseline = accumulated_time;
+            }
+            else
+            {
+                const breakDuration = transitionTime - previousPausedAt.getTime();
+
+                if(breakDuration >= minimum_break_threshold)
+                {
+                    session_baseline = accumulated_time;
+                }
+            }
+        }
 
         const updatedTask = await client.query(
-            "UPDATE tasks SET timer_state = $1, accumulated_time = $2, started_at = $3 WHERE id = $4 RETURNING *",
-            [requestedState, accumulated_time, newStartedAt, req.params.id]
+            "UPDATE tasks SET timer_state = $1, accumulated_time = $2, started_at = $3, paused_at = $4, session_baseline = $5 WHERE id = $6 RETURNING *",
+            [requestedState, accumulated_time, newStartedAt, newPausedAt, session_baseline, req.params.id]
         );
 
         await client.query("COMMIT");
@@ -152,7 +180,7 @@ app.delete("/tasks/:id", async (req, res) => {
         {
             res.status(200).json({
                 message: "Task deleted",
-                task: result.rows[0]
+                task: normalizeTask(result.rows[0])
             });
         }
         else if(result.rowCount === 0)
