@@ -123,6 +123,7 @@ More detailed setup instructions will be added as development continues.
 - [ ] Improved navigation and responsive design.
 - [ ] User authentication.
 - [ ] Cloud database hosting.
+- [ ] An alarm reminder to take frequent breaks and reassess.
 - [ ] Public deployment.
 - [ ] Additional improvements based on user feedback.
 
