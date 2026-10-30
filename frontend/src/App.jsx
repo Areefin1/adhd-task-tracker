@@ -1,9 +1,10 @@
 import "./App.css";
-import Task from "./Task.jsx";
+import Task from "./components/Task.jsx";
 import React, { useState, useEffect } from "react";
-import TaskForm from "./TaskForm.jsx";
-import TaskControl from "./TaskControl.jsx"
-import TimeWorked from "./TimeWorked.jsx";
+import TaskForm from "./components/TaskForm.jsx";
+import TaskControl from "./components/TaskControl.jsx"
+import TimeWorked from "./components/TimeWorked.jsx";
+import CurrentSession from "./components/CurrentSession.jsx";
 
 
 import {
@@ -42,11 +43,11 @@ function App() {
 
   async function fetchTasks() {
     try {
-      const data = await getTasks();
-      
-      setTasks(data);
+        const data = await getTasks();
+
+        setTasks(data);
     } catch (error) {
-      console.error("Failed to fetch GET:", error);
+        console.error("Failed to fetch GET:", error);
     }
   }
 
@@ -68,7 +69,7 @@ function App() {
       const data = await addNewTask(task);
 
       setTasks((currTasks) => {
-        return [...currTasks, data];
+          return [...currTasks, data];
       });
 
       setTask({ title: "", description: ""});
@@ -87,36 +88,37 @@ function App() {
         }
     });
   }
-
-  async function handleTransition(id, requestedState)
-  {
+  const minimum_break_threshold = 20 * 1000;
+async function handleTransition(id, requestedState) {
     try {
-          const currentTask = tasks.find(task => task.id === id);
-          const prev_timer_state = currentTask?.timer_state ?? "Not Active";
+        const currentTask = tasks.find(task => task.id === id);
+        const prev_timer_state = currentTask?.timer_state ?? "Not Active";
 
-          if(currentTask && nextTimerState[prev_timer_state].includes(requestedState))
-          {
-              const data = await updateTask(id, requestedState);
+        if (currentTask && nextTimerState[prev_timer_state].includes(requestedState)) {
 
-              setTasks((currTasks) => {
+            const data = await updateTask(id, requestedState);
+
+            setTasks((currTasks) => {
                 return currTasks.map((currTask) => {
-                  if(currTask.id === id)
-                  {
-                    return {
-                      ...currTask,
-                      timer_state: data.timer_state,
-                      started_at: data.started_at,
-                      accumulated_time: data.accumulated_time
+                    if (currTask.id === id) {
+                        return {
+                            ...currTask,
+                            timer_state: data.timer_state,
+                            started_at: data.started_at,
+                            accumulated_time: data.accumulated_time,
+                            session_baseline: data.session_baseline,
+                            paused_at: data.paused_at
+                        };
                     }
-                  }
-                  return currTask;
+
+                    return currTask;
                 });
-              });
-          }
+            });
+        }
     } catch (error) {
-        console.error("Failed to update task:", error)
+        console.error("Failed to update task:", error);
     }
-  }
+}
 
   return (
     <>
@@ -146,6 +148,14 @@ function App() {
             current_timer_state={task.timer_state ?? "Not Active"}
             started_at={task.started_at}
             accumulated_time={task.accumulated_time ?? 0}
+            />
+            <CurrentSession 
+            current_timer_state={task.timer_state ?? "Not Active"}
+            started_at={task.started_at}
+            accumulated_time={task.accumulated_time ?? 0}
+            paused_at={task.paused_at}
+            sessionBaseline={task.session_baseline}
+            minimum_break_threshold={minimum_break_threshold}
             />
             <div className="actions">            
               <TaskControl
