@@ -36,7 +36,7 @@ body {
 
 h1 {
     color: var(--text-primary);
-    text-align: center;
+    text-align: start;
     font-size: 36px;
     font-weight: 700;
 }
@@ -99,6 +99,30 @@ select {
     padding: 10px;
 }
 
+.task-row-history {
+    grid-template-columns:
+        minmax(0, 1.5fr)
+        minmax(0, 2.5fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr);    
+}
+
+.heading-history {
+    grid-template-columns:
+        minmax(0, 1.5fr)
+        minmax(0, 2.5fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr);
+}
+
 .heading > h2:nth-child(4),
 .heading > h2:nth-child(5) {
     text-align: center;
@@ -133,5 +157,53 @@ select {
     display: flex;
     align-items: center;
     gap: 5px;
+}
+
+.navigation-bar {
+    grid-column: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--bg-card);
+    padding: 5px;
+    border-radius: 12px;
+}
+
+.nav-link,
+.nav-active {
+    padding: 8px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.nav-link {
+    color: var(--text-secondary);
+}
+
+.nav-active {
+    background-color: var(--bg-elevated);
+    color: var(--accent);
+    font-weight: bold;
+}
+
+.nav-link:hover {
+    background-color: var(--bg-elevated);
+    color: var(--text-primary);
+}
+
+.app-header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding-bottom: 20px;
+}
+
+.app-header h1 {
+    grid-column: 1;
+    text-align: left;
+    font-size: 36px;
+    margin: 0;
 }
 

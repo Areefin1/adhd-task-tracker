@@ -4,6 +4,16 @@
 
 **Status: In Progress**
 
+## Screenshots
+
+### Active Tasks
+
+![Active Tasks Dashboard](screenshots/active-tasks.png)
+
+### Task History
+
+![Task History Dashboard](screenshots/task-history.png)
+
 ## Overview
 
 ADHD Task Tracker is a full-stack productivity application designed to help people with ADHD manage their tasks, track their time, and better understand their working habits.
@@ -116,6 +126,10 @@ More detailed setup instructions will be added as development continues.
 ## Planned Features
 
 - [ ] Dashboard with productivity statistics.
+- [x] Task history for completed tasks.
+- [ ] Search tasks by title or description.
+- [ ] Sort tasks by creation date or last modification.
+- [ ] Editable title and description.
 - [ ] Task history for completed tasks.
 - [ ] Search tasks by title or description.
 - [ ] Sort tasks by creation date or last modification.
