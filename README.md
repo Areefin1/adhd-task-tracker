@@ -108,6 +108,12 @@ As development continues, I hope to make the application publicly available, gat
 - Task controls that change depending on task status.
 - Styled forms and task cards using CSS and Tailwind CSS.
 
+### Task History
+- Automatically move completed tasks into a separate history page.
+- Display total time worked, last session, creation date, and completion date.
+- Preserve completed tasks after refreshing the application.
+- Delete completed tasks from history.
+
 ## Running Locally
 
 The application currently runs locally and requires Node.js and PostgreSQL.
