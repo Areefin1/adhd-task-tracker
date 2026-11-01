@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import formatTime from "../helpers/formatTime";
 
 function TimeWorked(props) {
     const [currentTime, setCurrentTime] = useState(Date.now());
@@ -27,17 +28,6 @@ function TimeWorked(props) {
         current_timer_state === "Running" && started_at != null
             ? accumulated_time + Math.max(0, currentTime - started_at)
             : accumulated_time;
-
-    function formatTime(milliseconds) {
-        const totalSeconds = Math.floor(milliseconds / 1000);
-
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
-
-        return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-    }
-
     return (
         <div>{formatTime(displayedTimeWorked)}</div>
     );
