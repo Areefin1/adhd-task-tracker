@@ -31,7 +31,9 @@ function normalizeTask(task)
         accumulated_time: Number(task.accumulated_time),
         started_at: task.started_at ? new Date(task.started_at).getTime() : null,
         paused_at: task.paused_at ? new Date(task.paused_at).getTime() : null,
-        session_baseline: Number(task.session_baseline)
+        session_baseline: Number(task.session_baseline),
+        created_at: task.created_at ? new Date(task.created_at).getTime() : null,
+        finished_at: task.finished_at ? new Date(task.finished_at).getTime() : null
     };
 }
 
@@ -141,9 +143,11 @@ app.patch("/tasks/:id", async (req, res) => {
             }
         }
 
+        const finished_at = requestedState === "Completed" ? new Date(transitionTime) : null;
+
         const updatedTask = await client.query(
-            "UPDATE tasks SET timer_state = $1, accumulated_time = $2, started_at = $3, paused_at = $4, session_baseline = $5 WHERE id = $6 RETURNING *",
-            [requestedState, accumulated_time, newStartedAt, newPausedAt, session_baseline, req.params.id]
+            "UPDATE tasks SET timer_state = $1, accumulated_time = $2, started_at = $3, paused_at = $4, session_baseline = $5, finished_at = $6 WHERE id = $7 RETURNING *",
+            [requestedState, accumulated_time, newStartedAt, newPausedAt, session_baseline, finished_at, req.params.id]
         );
 
         await client.query("COMMIT");

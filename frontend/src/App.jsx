@@ -1,10 +1,8 @@
 import "./App.css";
-import Task from "./components/Task.jsx";
-import React, { useState, useEffect } from "react";
-import TaskForm from "./components/TaskForm.jsx";
-import TaskControl from "./components/TaskControl.jsx"
-import TimeWorked from "./components/TimeWorked.jsx";
-import CurrentSession from "./components/CurrentSession.jsx";
+import { useState, useEffect } from "react";
+import ActiveTasksTab from "./components/ActiveTasksTab.jsx";
+import TaskHistoryTab from "./components/TaskHistoryTab.jsx";
+import { Routes, Route, NavLink } from "react-router";
 
 
 import {
@@ -41,6 +39,9 @@ function App() {
     fetchTasks();
   }, []);
 
+  const activeTasks = tasks.filter(task => task.timer_state !== "Completed");
+  const completedTasks = tasks.filter(task => task.timer_state === "Completed");
+  const minimum_break_threshold = 20 * 1000;
   async function fetchTasks() {
     try {
         const data = await getTasks();
@@ -88,8 +89,8 @@ function App() {
         }
     });
   }
-  const minimum_break_threshold = 20 * 1000;
-async function handleTransition(id, requestedState) {
+
+  async function handleTransition(id, requestedState) {
     try {
         const currentTask = tasks.find(task => task.id === id);
         const prev_timer_state = currentTask?.timer_state ?? "Not Active";
@@ -103,11 +104,7 @@ async function handleTransition(id, requestedState) {
                     if (currTask.id === id) {
                         return {
                             ...currTask,
-                            timer_state: data.timer_state,
-                            started_at: data.started_at,
-                            accumulated_time: data.accumulated_time,
-                            session_baseline: data.session_baseline,
-                            paused_at: data.paused_at
+                            ...data
                         };
                     }
 
@@ -122,58 +119,41 @@ async function handleTransition(id, requestedState) {
 
   return (
     <>
-      <h1 className="text-4xl text-purple-400">ADHD Task Tracker</h1>
-      <h2>Create a New Task</h2>
-      <TaskForm
-        addTask={handleAddTask}
-        onChange={handleOnChange}
-        title={task.title}
-        description={task.description}
-      />
-      <div className="heading">
-          <h2>Title</h2>
-          <h2>Description</h2>
-          <h2>Status</h2>
-          <h2>Time Worked</h2>
-          <h2>Current Session</h2>
-          <h2>Actions</h2>
-      </div>
-      {tasks.map((task) => (
-        <div key={task.id} className="task-row">
-            <Task
-            id={task.id}
-            title={task.title}
-            description={task.description}
-            status={timer_status[task.timer_state ?? "Not Active"]}
+      <header className="app-header">
+        <h1>ADHD Task Tracker</h1>
+        <nav className="navigation-bar">
+          <NavLink to="/" end
+          className={({ isActive }) => isActive ? "nav-active" : "nav-link"}>Active Tasks</NavLink>
+          <NavLink to="/history"className={({ isActive }) => isActive ? "nav-active" : "nav-link"}>Task History</NavLink>
+        </nav>
+      </header>
+
+      <Routes>
+        <Route 
+          path="/"
+          element={
+            <ActiveTasksTab
+              activeTasks={activeTasks}
+              task={task}
+              timer_status={timer_status}
+              minimum_break_threshold={minimum_break_threshold}
+              handleAddTask={handleAddTask}
+              handleOnChange={handleOnChange}
+              handleTransition={handleTransition}
+              handleDelete={handleDelete}
             />
-            <TimeWorked 
-            current_timer_state={task.timer_state ?? "Not Active"}
-            started_at={task.started_at}
-            accumulated_time={task.accumulated_time ?? 0}
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <TaskHistoryTab 
+              completedTasks={completedTasks}
+              handleDelete={handleDelete}
             />
-            <CurrentSession 
-            current_timer_state={task.timer_state ?? "Not Active"}
-            started_at={task.started_at}
-            accumulated_time={task.accumulated_time ?? 0}
-            paused_at={task.paused_at}
-            sessionBaseline={task.session_baseline}
-            minimum_break_threshold={minimum_break_threshold}
-            />
-            <div className="actions">            
-              <TaskControl
-              id={task.id} 
-              current_state={task.timer_state ?? "Not Active"}
-              onTransition={handleTransition}
-              />
-              <input 
-              type="button"
-              value={"Delete"}
-              onClick={() => handleDelete(task.id)}
-              className="bg-red-600 hover:bg-red-500 text-white font-semibold px-2 py-1 rounded-lg cursor-pointer transition-colors"
-              />
-            </div>
-        </div>
-      ))}
+          }
+        />
+      </Routes>
     </>
   );
 }

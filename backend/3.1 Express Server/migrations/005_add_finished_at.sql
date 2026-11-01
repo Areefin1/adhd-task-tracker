@@ -1,0 +1,6 @@
+BEGIN; 
+
+ALTER TABLE tasks
+ADD COLUMN finished_at TIMESTAMPTZ;
+
+COMMIT;
