@@ -129,10 +129,7 @@ More detailed setup instructions will be added as development continues.
 - [x] Task history for completed tasks.
 - [ ] Search tasks by title or description.
 - [ ] Sort tasks by creation date or last modification.
-- [ ] Editable title and description.
-- [ ] Task history for completed tasks.
-- [ ] Search tasks by title or description.
-- [ ] Sort tasks by creation date or last modification.
+- [ ] Editable task title and description.
 - [ ] Customizable break thresholds.
 - [ ] Improved navigation and responsive design.
 - [ ] User authentication.
